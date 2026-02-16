@@ -63,11 +63,8 @@ const textCanvas = document.getElementById("textCanvas");
 const textCtx = textCanvas.getContext("2d");
 
 function resize(){
- const w = window.innerWidth;
-  const h = window.innerHeight * 0.92; // trừ 8% phía trên
-
-  fireCanvas.width = textCanvas.width = w;
-  fireCanvas.height = textCanvas.height = h;
+  fireCanvas.width = textCanvas.width = window.innerWidth;
+  fireCanvas.height = textCanvas.height = window.innerHeight;
 }
 resize();
 window.addEventListener("resize", resize);
@@ -145,7 +142,7 @@ function makeText(){
     textCtx,
     text,
     textCanvas.width/2,
-    textCanvas.height/2+40,
+    textCanvas.height/2+60,
     textCanvas.width*0.8,
     90
   );
@@ -185,10 +182,19 @@ function loop(){
 }
 
 /* ===== ĐỔI CHỮ ===== */
+let textInterval;
+
 function changeText(){
-  idx=(idx+1)%texts.length;
-  text=texts[idx];
+  idx++;
+
+  if(idx >= texts.length){
+    clearInterval(textInterval); // DỪNG
+    return;
+  }
+
+  text = texts[idx];
   makeText();
+}
 }
 
 /* ===== COUNTDOWN ===== */
@@ -206,7 +212,7 @@ const cdInterval=setInterval(()=>{
     makeText(); // HIỆN CÂU ĐẦU TIÊN
     loop();
     setInterval(createFire,1200);
-    setInterval(changeText,6000);
+    textInterval = setInterval(changeText, 6000);
   }
 },1000);
 
@@ -214,5 +220,6 @@ const cdInterval=setInterval(()=>{
 </body>
 
 </html>
+
 
 
