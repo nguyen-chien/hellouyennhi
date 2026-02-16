@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <!-- GOOGLE FONT MONTSERRAT -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+
+<meta charset="UTF-8">
+<title>Particle Firework Text</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{
+  margin:0;
+  background:black;
+  overflow:hidden;
+}
+canvas{
+  position:fixed;
+  top:0;
+  left:0;
+}
+#countdown{
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  font-size:30vw;
+  color:yellow;
+  font-weight:bold;
+  z-index:5;
+  text-shadow:0 0 30px yellow;
+}
+</style>
+</head>
+
+<body>
+
+<div id="countdown">3</div>
+<canvas id="fireCanvas"></canvas>
+<canvas id="textCanvas"></canvas>
+
+<script>
+/* ===== CANVAS SIZE ===== */
+const fireCanvas = document.getElementById("fireCanvas");
+const fireCtx = fireCanvas.getContext("2d");
+const textCanvas = document.getElementById("textCanvas");
+const textCtx = textCanvas.getContext("2d");
+
+function resize(){
+  fireCanvas.width = textCanvas.width = window.innerWidth;
+  fireCanvas.height = textCanvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
+
+/* ===== PHÁO HOA ===== */
+let fireworks=[];
+function randColor(){
+  const c=["#ff0000","#ffff00","#00ff00","#00ffff","#ff00ff","#ffffff"];
+  return c[Math.floor(Math.random()*c.length)];
+}
+function createFire(){
+  const x=Math.random()*fireCanvas.width;
+  const y=Math.random()*fireCanvas.height/2;
+  for(let i=0;i<40;i++){
+    fireworks.push({x,y,a:Math.random()*6.28,s:Math.random()*3+1,l:70,c:randColor()});
+  }
+}
+function drawFire(){
+  fireCtx.fillStyle="rgba(0,0,0,0.25)";
+  fireCtx.fillRect(0,0,fireCanvas.width,fireCanvas.height);
+  fireworks.forEach((p,i)=>{
+    p.x+=Math.cos(p.a)*p.s;
+    p.y+=Math.sin(p.a)*p.s;
+    p.l--;
+    fireCtx.fillStyle=p.c;
+    fireCtx.fillRect(p.x,p.y,2,2);
+    if(p.l<=0) fireworks.splice(i,1);
+  });
+}
+
+/* ===== HÀM XUỐNG DÒNG ===== */
+function drawMultilineText(ctx, text, x, y, maxWidth, lineHeight){
+  const words=text.split(" ");
+  let line="";
+  let lines=[];
+  for(let n=0;n<words.length;n++){
+    const testLine=line+words[n]+" ";
+    if(ctx.measureText(testLine).width>maxWidth && n>0){
+      lines.push(line);
+      line=words[n]+" ";
+    }else{
+      line=testLine;
+    }
+  }
+  lines.push(line);
+
+  const startY=y-(lines.length*lineHeight)/2;
+  lines.forEach((l,i)=>{
+    ctx.fillText(l,x,startY+i*lineHeight);
+  });
+}
+
+/* ===== DANH SÁCH CHỮ ===== */
+const texts=[
+    "Happy New Year 2026, Em Bé Uyên Nhi",
+  "Năm mới mong em luôn cười thật tươi",
+  "Mỗi ngày trôi qua đều nhẹ nhàng với em",
+  "Buồn vui gì cũng có anh bên cạnh",
+  "Anh thương Uyên Nhi rất nhiều ❤"
+];
+
+let idx=0;
+let text=texts[0]; // QUAN TRỌNG
+
+/* ===== CHỮ HẠT ===== */
+let particles=[];
+
+function makeText(){
+  textCtx.clearRect(0,0,textCanvas.width,textCanvas.height);
+  textCtx.fillStyle="white";
+  textCtx.font="700 80px 'Montserrat', sans-serif";
+  textCtx.textAlign="center";
+
+  drawMultilineText(
+    textCtx,
+    text,
+    textCanvas.width/2,
+    textCanvas.height/2,
+    textCanvas.width*0.8,
+    90
+  );
+
+  const data=textCtx.getImageData(0,0,textCanvas.width,textCanvas.height).data;
+  particles=[];
+  for(let y=0;y<textCanvas.height;y+=6){
+    for(let x=0;x<textCanvas.width;x+=6){
+      const i=(y*textCanvas.width+x)*4;
+      if(data[i+3]>128){
+        particles.push({
+          x:Math.random()*textCanvas.width,
+          y:Math.random()*textCanvas.height,
+          tx:x,
+          ty:y
+        });
+      }
+    }
+  }
+}
+
+function drawText(){
+  textCtx.clearRect(0,0,textCanvas.width,textCanvas.height);
+  particles.forEach(p=>{
+    p.x+=(p.tx-p.x)*0.05;
+    p.y+=(p.ty-p.y)*0.05;
+    textCtx.fillStyle="#00ffcc";
+    textCtx.fillRect(p.x,p.y,2,2);
+  });
+}
+
+/* ===== LOOP ===== */
+function loop(){
+  drawFire();
+  drawText();
+  requestAnimationFrame(loop);
+}
+
+/* ===== ĐỔI CHỮ ===== */
+function changeText(){
+  idx=(idx+1)%texts.length;
+  text=texts[idx];
+  makeText();
+}
+
+/* ===== COUNTDOWN ===== */
+let count=3;
+const cd=document.getElementById("countdown");
+
+const cdInterval=setInterval(()=>{
+  count--;
+  if(count>0){
+    cd.textContent=count;
+  }else{
+    cd.style.display="none";
+    clearInterval(cdInterval);
+
+    makeText(); // HIỆN CÂU ĐẦU TIÊN
+    loop();
+    setInterval(createFire,1200);
+    setInterval(changeText,6000);
+  }
+},1000);
+
+</script>
+</body>
+</html>
