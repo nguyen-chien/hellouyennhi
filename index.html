@@ -12,7 +12,7 @@
 <style>
     @media screen and (orientation: portrait) {
   body::before{
-    content: "Vui lòng xoay ngang điện thoại";
+    content: "Em xoay ngang điện thoại nhé!";
     position: fixed;
     top:0; left:0;
     width:100%; height:100%;
@@ -63,8 +63,11 @@ const textCanvas = document.getElementById("textCanvas");
 const textCtx = textCanvas.getContext("2d");
 
 function resize(){
-  fireCanvas.width = textCanvas.width = window.innerWidth;
-  fireCanvas.height = textCanvas.height = window.innerHeight;
+ const w = window.innerWidth;
+  const h = window.innerHeight * 0.92; // trừ 8% phía trên
+
+  fireCanvas.width = textCanvas.width = w;
+  fireCanvas.height = textCanvas.height = h;
 }
 resize();
 window.addEventListener("resize", resize);
@@ -119,7 +122,7 @@ function drawMultilineText(ctx, text, x, y, maxWidth, lineHeight){
 
 /* ===== DANH SÁCH CHỮ ===== */
 const texts=[
-    "Happy New Year 2026, Em Bé Uyên Nhi",
+    "Happy New Year 2026, Em Bé Uyên Nhi!",
   "Năm mới mong em luôn cười thật tươi",
   "Mỗi ngày trôi qua đều nhẹ nhàng với em",
   "Buồn vui gì cũng có anh bên cạnh",
@@ -142,7 +145,7 @@ function makeText(){
     textCtx,
     text,
     textCanvas.width/2,
-    textCanvas.height/2+30,
+    textCanvas.height/2+40,
     textCanvas.width*0.8,
     90
   );
@@ -211,4 +214,5 @@ const cdInterval=setInterval(()=>{
 </body>
 
 </html>
+
 
